@@ -4,11 +4,14 @@ function GetCurrentTime()
 end
 
 function GetNextRestartTime()
-	local time = GetCurrentTime()
-	local nextRestartTime
+	local currentTime = GetCurrentTime()
+	local minRemaining, nextRestartTime
 
 	for _, restartTime in ipairs(Config.RestartTimes) do
-		if not nextRestartTime or (restartTime > time and restartTime < nextRestartTime) then
+		local remaining = (86400 - currentTime + restartTime) % 86400
+
+		if not minRemaining or remaining < minRemaining then
+			minRemaining = remaining
 			nextRestartTime = restartTime
 		end
 	end
@@ -42,7 +45,7 @@ function GetRemainingTime()
 end
 
 RegisterCommand('nextRestart', function(source, args, raw)
-	local remaining = GetRemainingTime(time)
+	local remaining = GetRemainingTime()
 	local h1, m1, s1 = TimeToHMS(remaining)
 	local h2, m2, s2 = TimeToHMS(RestartTime)
 	SendRestartMessage(source, string.format("%d hours, %d minutes, %d seconds (%.2d:%.2d:%.2d)", h1, m1, s1, h2, m2, s2))
