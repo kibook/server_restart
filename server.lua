@@ -1,4 +1,22 @@
-local RestartTime = Config.RestartTime
+function GetCurrentTime()
+	local date = os.date("*t")
+	return HMSToTime(date.hour, date.min, date.sec)
+end
+
+function GetNextRestartTime()
+	local time = GetCurrentTime()
+	local nextRestartTime
+
+	for _, restartTime in ipairs(Config.RestartTimes) do
+		if not nextRestartTime or (restartTime > time and restartTime < nextRestartTime) then
+			nextRestartTime = restartTime
+		end
+	end
+
+	return nextRestartTime
+end
+
+local RestartTime = GetNextRestartTime()
 local DryRun = false
 
 function SendRestartMessage(source, time)
@@ -19,30 +37,29 @@ function SendRestartMessage(source, time)
 	end
 end
 
-function GetCurrentTime()
-	local date = os.date("*t")
-	return HMSToTime(date.hour, date.min, date.sec)
-end
-
 function GetRemainingTime()
 	return (86400 - GetCurrentTime() + RestartTime) % 86400
 end
 
-RegisterCommand('nextrestart', function(source, args, raw)
+RegisterCommand('nextRestart', function(source, args, raw)
 	local remaining = GetRemainingTime(time)
 	local h1, m1, s1 = TimeToHMS(remaining)
 	local h2, m2, s2 = TimeToHMS(RestartTime)
 	SendRestartMessage(source, string.format("%d hours, %d minutes, %d seconds (%.2d:%.2d:%.2d)", h1, m1, s1, h2, m2, s2))
 end, false)
 
-function IsAfterTime(current, time)
-	return 86400 - current + RestartTime <= time
-end
-
 function KickAllPlayers()
 	for _, id in ipairs(GetPlayers()) do
 		DropPlayer(id, 'Server restarting')
 	end
+end
+
+function QuitServer()
+	KickAllPlayers()
+
+	SetTimeout(5000, function()
+		ExecuteCommand('quit')
+	end)
 end
 
 function EndDryRun()
@@ -52,27 +69,20 @@ function EndDryRun()
 	exports.weathersync:resetTime()
 	exports.weathersync:resetTimescale()
 
-	RestartTime = Config.RestartTime
+	RestartTime = GetNextRestartTime()
 	DryRun = false
 end
 
-RegisterCommand('restartdryrun', function(source, args, raw)
+RegisterCommand('restartServerDryRun', function(source, args, raw)
 	DryRun = true
 	RestartTime = GetCurrentTime() + 190
 end, true)
 
-local MessageSent = {
-	  [12] = false,
-	  [15] = false,
-	  [30] = false,
-	  [60] = false,
-	 [180] = false,
-	 [300] = false,
-	 [600] = false,
-	 [900] = false,
-	[1800] = false,
-	[3600] = false
-}
+RegisterCommand('restartServer', function(source, args, raw)
+	RestartTime = GetCurrentTime() + 190
+end, true)
+
+local MessageSent = {}
 
 CreateThread(function()
 	while true do
@@ -98,7 +108,7 @@ CreateThread(function()
 		elseif remaining <= 180 and not MessageSent[180] then
 			SendRestartMessage(-1, '3 minutes')
 			MessageSent[180] = true
-			exports.weathersync:setWeather('sunny', 30.0, true)
+			exports.weathersync:setWeather('sunny', 30.0, true, false)
 			exports.weathersync:setTime(19, 0, 0, 30000, false)
 			exports.weathersync:setTimescale(15)
 			exports.events:playAudio(Config.Music)
@@ -118,7 +128,7 @@ CreateThread(function()
 				if DryRun then
 					EndDryRun()
 				else
-					KickAllPlayers()
+					QuitServer()
 				end
 			end)
 			MessageSent[12] = true
