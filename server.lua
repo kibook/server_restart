@@ -66,6 +66,7 @@ function QuitServer()
 end
 
 function EndDryRun()
+	exports.events:animpostfxStop(Config.Effect)
 	exports.events:screenFadeIn(1000)
 
 	exports.weathersync:resetWeather()
@@ -114,6 +115,7 @@ CreateThread(function()
 			exports.weathersync:setWeather('sunny', 30.0, true, false)
 			exports.weathersync:setTime(19, 0, 0, 30000, false)
 			exports.weathersync:setTimescale(15)
+			exports.events:animpostfxPlay(Config.Effect)
 			exports.events:playAudio(Config.Music)
 		elseif remaining <= 60 and not MessageSent[60] then
 			SendRestartMessage(-1, '1 minute')

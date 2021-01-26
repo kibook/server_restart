@@ -5,3 +5,4 @@ Config.RestartTimes = {
 }
 
 Config.Music = 'https://redm.khzae.net/ttwii.ogg'
+Config.Effect = 'Mission_FIN1_RideGood'
