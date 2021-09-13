@@ -113,7 +113,7 @@ CreateThread(function()
 			SendRestartMessage(-1, '3 minutes')
 			MessageSent[180] = true
 			exports.weathersync:setWeather('sunny', 30.0, true, false)
-			exports.weathersync:setTime(19, 0, 0, 30000, false)
+			exports.weathersync:setTime(0, 19, 0, 0, 30000, false)
 			exports.weathersync:setTimescale(15)
 			exports.events:animpostfxPlay(Config.Effect)
 			exports.events:playAudio(Config.Music)
