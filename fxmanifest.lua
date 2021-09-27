@@ -1,14 +1,16 @@
-game 'rdr3'
-fx_version 'adamant'
-rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
+fx_version "cerulean"
+games "common"
+rdr3_warning "I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships."
 
-dependency 'weathersync' -- https://github.com/kibook/redm-weathersync
-dependency 'events'      -- https://github.com/kibook/redm-events
+name "server_restart"
+author "kibukj"
+description "Configurable automatic server restart with notifications"
+repository "https://github.com/kibook/server_restart"
 
-server_only 'yes'
+server_only "yes"
 
 server_scripts {
-	'common.lua',
-	'config.lua',
-	'server.lua'
+	"common.lua",
+	"config.lua",
+	"server.lua"
 }
