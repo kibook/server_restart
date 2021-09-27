@@ -19,14 +19,31 @@ Config.actions = {
 	[ 300] = function(sendRestartMessage)
 		sendRestartMessage("5 minutes")
 	end,
+	[ 180] = function(sendRestartMessage)
+		sendRestartMessage("3 minutes")
+		exports.weathersync:setWeather("sunny", 30.0, true, false)
+		exports.weathersync:setTime(0, 19, 0, 0, 30000, false)
+		exports.weathersync:setTimescale(15)
+		exports.events:animpostfxPlay("Mission_FIN1_RideGood")
+		exports.events:playAudio("https://redm.khzae.net/ttwii.ogg")
+	end,
 	[  60] = function(sendRestartMessage)
 		sendRestartMessage("1 minute")
 	end,
 	[  30] = function(sendRestartMessage)
 		sendRestartMessage("30 seconds")
-	end
+	end,
+	[  15] = function(sendRestartMessage)
+		exports.events:screenFadeOut(15000)
+	end,
 
 }
 
 -- Extra actions to perform when a dry run ends
---Config.onDryRunEnd = function() end
+Config.onDryRunEnd = function(sendRestartMessage)
+	exports.events:animpostfxStop("Mission_FIN1_RideGood")
+	exports.events:screenFadeIn(1000)
+	exports.weathersync:resetWeather()
+	exports.weathersync:resetTime()
+	exports.weathersync:resetTimescale()
+end
