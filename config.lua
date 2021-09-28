@@ -30,3 +30,9 @@ Config.actions = {
 
 -- Extra actions to perform when a dry run ends
 --Config.onDryRunEnd = function() end
+
+-- Webhook
+--Config.webhook = ""
+
+-- Colour of the embed in webhook messages
+Config.webhookColour = 0x008080
