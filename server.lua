@@ -22,21 +22,26 @@ end
 local restartTime = getNextRestartTime()
 local dryRun = false
 
+local function formatRestartMessage(time)
+	if dryRun then
+		return "[TEST] Server will restart in " .. time
+	else
+		return "Server will restart in " .. time
+	end
+end
+
+local function printRestartMessage(time)
+	print(formatRestartMessage(time))
+end
+
 local function sendRestartMessage(source, time)
 	if not source or source == 0 then
-		print("Server will restart in " .. time)
+		printRestartMessage(time)
 	else
-		if dryRun then
-			TriggerClientEvent("chat:addMessage", source, {
-				color = {255, 255, 128},
-				args = {"[Test] Server will restart in " .. time}
-			})
-		else
-			TriggerClientEvent("chat:addMessage", source, {
-				color = {255, 255, 128},
-				args = {"Server will restart in " .. time}
-			})
-		end
+		TriggerClientEvent("chat:addMessage", source, {
+			color = {255, 255, 128},
+			args = {formatRestartMessage(time)}
+		})
 	end
 end
 
@@ -44,12 +49,57 @@ local function sendRestartMessageToAll(time)
 	sendRestartMessage(-1, time)
 end
 
+local function executeWebhook(message)
+	local data = {
+		embeds = {
+			{
+				color = Config.webhookColour,
+				description = message
+			}
+		}
+	}
+
+	return exports.discord_rest:executeWebhookUrl(Config.webhook, data):next(nil, function(err)
+		print("Execution of webhook failed: " .. err)
+	end)
+end
+
+local function sendRestartMessageToDiscord(time)
+	executeWebhook(formatRestartMessage(time))
+end
+
+local function broadcastRestartMessage(time)
+	printRestartMessage(time)
+
+	sendRestartMessageToAll(time)
+
+	if Config.webhook then
+		sendRestartMessageToDiscord(time)
+	end
+end
+
 local function getRemainingTime()
 	return (86400 - getCurrentTime() + restartTime) % 86400
 end
 
+local function prepareToQuit()
+	local p = promise.new()
+
+	if Config.webhook then
+		executeWebhook("Server is restarting"):next(function()
+			p:resolve()
+		end)
+	else
+		p:resolve()
+	end
+
+	return p
+end
+
 local function quitServer()
-	ExecuteCommand("quit Restarting")
+	prepareToQuit():next(function()
+		ExecuteCommand("quit Restarting")
+	end)
 end
 
 local function endDryRun()
@@ -103,7 +153,7 @@ Citizen.CreateThread(function()
 
 		for _, action in ipairs(actions) do
 			if remaining <= action.time and action.perform then
-				action.perform(sendRestartMessageToAll)
+				action.perform(broadcastRestartMessage)
 				action.perform = nil
 			end
 		end

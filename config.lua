@@ -47,3 +47,9 @@ Config.onDryRunEnd = function(sendRestartMessage)
 	exports.weathersync:resetTime()
 	exports.weathersync:resetTimescale()
 end
+
+-- Webhook
+--Config.webhook = ""
+
+-- Colour of the embed in webhook messages
+Config.webhookColour = 0x008080

@@ -6,6 +6,9 @@ author "kibukj"
 description "Configurable automatic server restart with notifications"
 repository "https://github.com/kibook/server_restart"
 
+-- Can be commented out if Config.webhook is disabled
+dependency "discord_rest" -- https://github.com/kibook/discord_rest
+
 dependency "events"
 dependency "weathersync"
 
